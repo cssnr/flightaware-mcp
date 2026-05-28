@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: flightaware-mcp
+    plan: free
+    runtime: image
+    image:
+      url: ghcr.io/cssnr/flightaware-mcp:latest
+    #dockerCommand: npm start
+    #healthCheckPath: /app-health-check
+    envVars:
+      - key: AEROAPI_KEY
+        sync: false
