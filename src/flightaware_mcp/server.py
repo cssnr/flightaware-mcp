@@ -38,6 +38,7 @@ mcp = FastMCP(
     "flightaware",
     lifespan=app_lifespan,
     json_response=True,
+    stateless_http=True,
     transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
 )
 
