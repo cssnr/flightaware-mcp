@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -13,6 +14,7 @@ from pydantic import Field
 
 from ._version import __version__
 from .fa import FlightAware
+from .utils import str_to_bool
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,7 @@ mcp = FastMCP(
     "flightaware",
     lifespan=app_lifespan,
     json_response=True,
-    stateless_http=True,
+    stateless_http=str_to_bool(os.environ.get("STATELESS_HTTP", "true")),
     transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
 )
 
@@ -78,6 +80,25 @@ async def iata_to_icao(
     logger.info("result: %s", result)
     text = result or f"Unable to convert flight_number to ICAO: {flight_number}"
     return CallToolResult(content=[TextContent(type="text", text=text)], isError=not result)
+
+
+@mcp.tool()
+async def aircraft_data_links(
+    registration_number: Annotated[str, Field(description="Aircraft Registration Number, ex: N1234, C-ABCD")],
+) -> CallToolResult:
+    """Return useful links for a given Aircraft Registration"""
+    logger.info("aircraft_data_links: %s", registration_number)
+    reg = registration_number.strip().upper()
+    links = {
+        "FlightAware Registration": f"https://flightaware.com/resources/registration/{reg}",
+        "FlightRadar24 Aircraft": f"https://www.flightradar24.com/data/aircraft/{reg}",
+        "Airfleets Search": f"https://www.airfleets.net/recherche/?key={reg}",
+        "JetPhotos": f"https://www.jetphotos.com/registration/{reg}",
+        "Aviation Herald Search": f"https://avherald.com/h?dosearch=1&search_term={reg}",
+    }
+    text = json.dumps(links)
+    logger.info("text: %s", text)
+    return CallToolResult(content=[TextContent(type="text", text=text)])
 
 
 def main():
