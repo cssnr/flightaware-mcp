@@ -1,3 +1,5 @@
+# Example Docker Swarm + Traefik stack. The hosted instance (flightaware-mcp.cssnr.com) is
+# deployed from hosted-domains/docker-compose (cssnr-flightaware-mcp/), not from this repo.
 version: "3.8"
 
 services:
